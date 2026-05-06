@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TEK TAKİP
 
-## Getting Started
+Müşteri ve yönetici rolleri ile talep oluşturma, takip ve dosya yükleme akışları sunan Next.js paneli.
 
-First, run the development server:
+## Geliştirme
+
+1. `cp .env.example .env.local` dosyasına kopyalayın ve `DATABASE_URL`, `AUTH_SECRET` gibi değişkenleri doldurun.
+2. Yerel Postgres üzerinde tabloları oluşturmak için: `npx prisma migrate deploy`
+3. Opsiyonel: İlk admin kullanıcısını oluşturmak için `npm exec prisma db seed`
+4. Geliştirme sunucusu: `npm run dev`
+
+Üretimde dosyaları kalıcı tutmak için Vercel Blob ve `BLOB_READ_WRITE_TOKEN` kullanmanız önerilir. Token yoksa dosyalar proje klasöründeki `/uploads` dizinine yazılır; bu yöntem sunucusuz ortamda kalıcı değildir.
+
+## Dosya süresi
+
+Yüklemeler yükleme zamanından itibaren 7 günlük süre için erişime açık tutulur. `/api/cron/dosya-temizlik` uç noktasını `Authorization: Bearer CRON_SECRET` başlığı ile çağırarak veya Vercel Cron ile otomatikleştirerek kayıtları temizleyebilirsiniz. İndirme rotaları aynı süre kontrolünü anlık olarak da uygular.
+
+## GitHub
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git init
+git add .
+git commit -m "TEK TAKİP ilk sürüm"
+git branch -M main
+git remote add origin https://github.com/KULLANICI_ADI/REPO_ADI.git
+git push -u origin main
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Vercel
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. [Vercel](https://vercel.com) üzerinde yeni proje oluşturun ve GitHub deposunu bağlayın.
+2. Ortam değişkenlerini `.env.example` satırlarına göre ekleyin. `AUTH_URL` değerini yayınlanan kök adresiniz yapın.
+3. İlk dağıtımdan önce veritabanında migrasyonları çalıştırın. Örnek derleme komutu:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   `npx prisma migrate deploy && npm run build`
 
-## Learn More
+   Bu komutu Vercel proje ayarlarındaki “Build Command” alanına yazabilirsiniz.
+4. Yöneticiyi oluşturmak için tek seferlik `npx prisma db seed` çalıştırın veya Postgres içinde elle kullanıcı ekleyin. Seed varsayılanı `.env.example` ile açıklanmıştır.
+5. Cron: `vercel.json` günlük temizlik yolunu tanımlar. Projede `CRON_SECRET` değişkeni tanımlı olmalıdır.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Harici sistemler için `POST /api/tasks/update` uç noktası Türkçe veya İngilizce alan adlarını (`gizli` / `secret`, `talepId` / `taskId`, `durum` / `status`) kabul eder.

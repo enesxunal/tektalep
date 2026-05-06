@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/dosya-temizlik",
+      "schedule": "0 3 * * *"
+    }
+  ]
+}

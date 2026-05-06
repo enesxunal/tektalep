@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  CUSTOMER
+}
+
+enum TaskStatus {
+  GONDERILDI
+  KONTROL_EDILIYOR
+  SIRAYA_ALINDI
+  HAZIRLANIYOR
+  TAMAMLANDI
+}
+
+model User {
+  id       String @id @default(cuid())
+  name     String
+  username String @unique
+  password String
+  role     Role   @default(CUSTOMER)
+
+  tasks Task[] @relation("CustomerTasks")
+
+  @@map("users")
+}
+
+model Task {
+  id          String @id @default(cuid())
+  customerId  String
+  customer    User   @relation("CustomerTasks", fields: [customerId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+
+  /// Müşteri referans görseli (URL veya yerel dosya anahtarı)
+  imageUrl       String?
+  imageCreatedAt DateTime?
+
+  /// Admin tamamlama görseli
+  completionImageUrl       String?
+  completionImageCreatedAt DateTime?
+
+  dueDate   DateTime
+  status    TaskStatus @default(GONDERILDI)
+  createdAt DateTime   @default(now())
+  /// Tamamlandı statüsüne geçtiğinde doldurulur (aylık raporlar için)
+  completedAt DateTime?
+
+  @@index([customerId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("tasks")
+}
