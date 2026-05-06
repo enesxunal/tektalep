@@ -39,3 +39,17 @@ git push -u origin main
 5. Cron: `vercel.json` günlük temizlik yolunu tanımlar. Projede `CRON_SECRET` değişkeni tanımlı olmalıdır.
 
 Harici sistemler için `POST /api/tasks/update` uç noktası Türkçe veya İngilizce alan adlarını (`gizli` / `secret`, `talepId` / `taskId`, `durum` / `status`) kabul eder.
+
+## Vercel’de “This page couldn’t load / server error”
+
+Bu ekran genelde **eksik ortam değişkeni** veya **veritabanı tablolarının oluşturulmaması** yüzünden çıkar. Kontrol listesi:
+
+1. **Project → Settings → Environment Variables** içinde mutlaka ekleyin:
+   - **`AUTH_SECRET`**: Terminalde `openssl rand -base64 32` ile üretin; Production (ve Preview için kullanıyorsanız Preview) ortamına yapıştırın. Bu olmadan üretimde oturum şifrelemesi çalışmaz ve sayfa sunucu hatası verebilir.
+   - **`AUTH_URL`**: Tam kök adres, örn. `https://tektalep.vercel.app`
+   - **`DATABASE_URL`**: Neon / Supabase vb. PostgreSQL bağlantısı (çoğu bulutta `?sslmode=require` gerekir).
+2. Değişkenleri kaydettikten sonra **Deployments** sayfasından **Redeploy** yapın (önbellek kullanmadan).
+3. Veritabanında migrasyon çalıştırın (bir kez yeter): yerel makinede `.env` ile `DATABASE_URL` ayarlı iken `npx prisma migrate deploy` veya Vercel CLI ile aynı komut.
+4. Son olarak admin kullanıcı: `npm exec prisma db seed` (aynı `DATABASE_URL` ile).
+
+Sorun sürerse Vercel’de ilgili dağıtıma tıklayıp **Runtime Logs** veya **Functions** loglarına bakın; kırmızı satırda genelde `AUTH_SECRET` veya `DATABASE_URL` ile ilgili net bir mesaj görünür.

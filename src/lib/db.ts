@@ -21,6 +21,8 @@ function musteriOlustur(): PrismaClient {
     globalBaglam.veriHavuzu ??
     new Pool({
       connectionString: baglanti,
+      /** Serverless (Vercel) ortamında bağlantı taşmasını azaltır */
+      max: process.env.NODE_ENV === "production" ? 1 : 10,
     });
 
   globalBaglam.veriHavuzu = havuz;
